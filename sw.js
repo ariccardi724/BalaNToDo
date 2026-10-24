@@ -1,4 +1,4 @@
-const CACHE = 'ivy-tasks-v3';
+const CACHE = 'ivy-tasks-v4';
 const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './logo-white.png', './favicon.png'];
 
 self.addEventListener('install', e => {
@@ -24,7 +24,7 @@ self.addEventListener('fetch', e => {
   // Pages: network first so everyone gets the newest version, cache only as offline fallback
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'no-cache' })   // always check with the server, ignore the 10-minute browser cache
         .then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)); return res; })
         .catch(() => caches.match('./index.html'))
     );
