@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>IvyRehab Tasks</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3FBFAE">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Slab:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --aqua:#5AC7CF; --teal:#47C1B7; --green:#24B78A; --blue:#1777BC;
+    --accent:#0F7A6E; --accent-2:#1470AE;
+    --bg:#EFF9F9; --surface:#FFFFFF; --surface-2:#F5FBFB;
+    --ink:#0E2F38; --muted:#4F6D75; --line:#CBE6E7;
+    --tint:#E1F4F3; --tint-ink:#0B5A58; --done-bg:#E1F4F3;
+    --urg:#E8710A; --urg-bg:#FFF0DC; --urg-ink:#8F3F00; --urg-fill:#FF9626; --urg-fill-ink:#2B1300;
+    --red:#C93C3C; --red-bg:#FDEBEB; --red-ink:#9C2525;
+    --blue-bg:#E3F0FA; --blue-ink:#14609A;
+    --focus:#1470AE;
+    --shadow:0 1px 2px rgba(14,47,56,.06), 0 4px 14px rgba(14,47,56,.05);
+    --pill-bg:rgba(255,255,255,.92); --pill-ink:#0E3A47;
+    --slab:'Roboto Slab', Georgia, serif;
+    --sans:'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#08191F; --surface:#0F2730; --surface-2:#0B1F27;
+      --ink:#E5F3F4; --muted:#93B2B8; --line:#1E3F49;
+      --tint:#123539; --tint-ink:#8FE3D8; --done-bg:#0E2D31;
+      --urg:#FF9626; --urg-bg:#33200B; --urg-ink:#FFC48A;
+      --red:#FF7B7B; --red-bg:#391B1E; --red-ink:#FFA8A8;
+      --blue-bg:#10304A; --blue-ink:#93CBF5;
+      --focus:#6FC3F5; --shadow:none;
+    }
+  }
+
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  [hidden] { display:none !important; }
+  html { -webkit-text-size-adjust:100%; }
+  body { font-family:var(--sans); background:var(--bg); color:var(--ink); min-height:100vh; line-height:1.5; }
+  button, input, select, textarea { font:inherit; color:inherit; }
+  button { cursor:pointer; }
+  :focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
+
+  /* ───────── BANNER ───────── */
+  .banner {
+    background:
+      radial-gradient(70% 260% at 102% 130%, #1777BC 0%, rgba(23,119,188,0) 62%),
+      radial-gradient(55% 240% at 88% -45%, #24B78A 0%, rgba(36,183,138,0) 65%),
+      linear-gradient(95deg, #5AC7CF 0%, #4AC2BD 55%, #3DBDAA 100%);
+    padding:calc(14px + env(safe-area-inset-top)) 20px 14px;
+  }
+  .banner-inner { max-width:760px; margin:0 auto; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .brand-logo { height:30px; width:auto; display:block; }
+  .brand-title {
+    font-family:var(--slab); font-weight:500; font-size:22px; color:#fff;
+    padding-left:14px; border-left:1.5px solid rgba(255,255,255,.55);
+    text-shadow:0 1px 2px rgba(0,70,80,.3); line-height:1.1;
+  }
+  .banner-tools { margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .pill {
+    display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 12px;
+    border-radius:999px; background:var(--pill-bg); color:var(--pill-ink);
+    font-size:12.5px; font-weight:600; border:0; white-space:nowrap;
+  }
+  .pill select { background:transparent; border:0; font-weight:600; color:var(--pill-ink); padding-right:2px; cursor:pointer; }
+  .pill select option { color:#0E2F38; background:#fff; }
+  .dot { width:9px; height:9px; border-radius:50%; background:#9AA9AC; flex-shrink:0; }
+  .dot.live { background:#14A86B; box-shadow:0 0 0 3px rgba(20,168,107,.22); }
+  .dot.poll { background:#E0A100; }
+  .dot.error { background:#D64545; }
+  .bell { width:32px; padding:0; justify-content:center; }
+  .bell svg { display:block; }
+  .bell .slash { display:none; }
+  .bell[data-state="off"] .slash, .bell[data-state="muted"] .slash, .bell[data-state="denied"] .slash { display:block; }
+  .bell[data-state="on"] { background:#fff; }
+
+  /* ───────── PAGE ───────── */
+  .page { max-width:760px; margin:0 auto; padding:0 20px 64px; }
+  .today { padding:22px 0 14px; }
+  .today h1 { font-family:var(--slab); font-weight:500; font-size:26px; line-height:1.2; letter-spacing:-.005em; }
+  .today p { color:var(--muted); font-size:13.5px; margin-top:2px; }
+
+  /* ───────── CAPTURE ───────── */
+  .capture {
+    background:var(--surface); border:1.5px solid var(--line); border-radius:14px;
+    padding:12px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:10px;
+  }
+  .capture-row { display:flex; gap:10px; align-items:flex-end; }
+  #chatInput {
+    flex:1; resize:none; height:calc(2 * 1.6 * 14px + 20px);
+    border:1.5px solid var(--line); border-radius:10px; padding:9px 12px;
+    font-size:14px; line-height:1.6; background:var(--surface-2); color:var(--ink);
+  }
+  #chatInput::placeholder { color:var(--muted); opacity:.75; }
+  #chatInput:focus { border-color:var(--accent-2); outline:none; }
+  .send {
+    width:46px; height:46px; border:0; border-radius:12px; flex-shrink:0;
+    background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff;
+    display:flex; align-items:center; justify-content:center; transition:transform .1s, filter .15s;
+  }
+  .send:hover { filter:brightness(1.08); }
+  .send:active { transform:scale(.95); }
+  .send.loading { opacity:.6; pointer-events:none; }
+  .capture-opts { display:flex; align-items:center; gap:8px 12px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); }
+  .opt { display:inline-flex; align-items:center; gap:6px; }
+  .opt input, .opt select {
+    border:1.5px solid var(--line); border-radius:8px; padding:4px 8px; font-size:12.5px;
+    background:var(--surface-2); color:var(--ink);
+  }
+  .opt input:focus, .opt select:focus { border-color:var(--accent-2); outline:none; }
+  .urgent-toggle {
+    display:inline-flex; align-items:center; gap:7px; height:30px; padding:0 12px 0 6px;
+    border-radius:999px; border:1.5px solid var(--line); background:transparent;
+    color:var(--muted); font-size:12.5px; font-weight:600; transition:background .15s, border-color .15s, color .15s;
+  }
+  .urgent-toggle .bang, .urg-badge {
+    display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px;
+    border-radius:50%; background:var(--urg); color:#fff; font-size:12px; font-weight:700; line-height:1; flex-shrink:0;
+  }
+  .urgent-toggle[aria-pressed="true"] { background:var(--urg-fill); border-color:var(--urg-fill); color:var(--urg-fill-ink); }
+  .urgent-toggle[aria-pressed="true"] .bang { background:var(--urg-fill-ink); color:var(--urg-fill); }
+  .status { font-size:12.5px; min-height:18px; }
+  .status.success { color:var(--accent); }
+  .status.error { color:var(--red); }
+  @media (prefers-color-scheme: dark) { .status.success { color:#6FE0C0; } }
+
+  /* ───────── TABS ───────── */
+  .tabs {
+    position:sticky; top:0; z-index:10; background:var(--bg);
+    display:flex; border-bottom:1.5px solid var(--line); margin-top:18px; overflow-x:auto; scrollbar-width:none;
+  }
+  .tab {
+    position:relative; background:none; border:0; padding:12px 16px 11px; white-space:nowrap; flex-shrink:0;
+    display:flex; align-items:center; gap:7px; font-size:13.5px; font-weight:500; color:var(--muted);
+    transition:color .15s;
+  }
+  .tab:hover { color:var(--ink); }
+  .tab[aria-selected="true"] { color:var(--ink); font-weight:600; }
+  .tab[aria-selected="true"]::after {
+    content:''; position:absolute; left:10px; right:10px; bottom:-1.5px; height:3px; border-radius:3px 3px 0 0;
+    background:linear-gradient(90deg, var(--aqua), var(--green) 60%, var(--blue));
+  }
+  .count { background:var(--tint); color:var(--tint-ink); border-radius:999px; padding:0 8px; font-size:11.5px; font-weight:600; line-height:20px; }
+  .tab[aria-selected="true"] .count { background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; }
+
+  .panel { display:none; flex-direction:column; gap:18px; padding-top:16px; }
+  .panel.active { display:flex; }
+  .tools { display:flex; align-items:center; justify-content:flex-end; min-height:26px; }
+  .tools:not(:has(.ghost:not([hidden]))) { display:none; }
+  .ghost {
+    background:none; border:1.5px solid var(--line); border-radius:8px; padding:4px 11px;
+    font-size:12px; color:var(--muted); transition:border-color .15s, color .15s;
+  }
+  .ghost:hover { border-color:var(--accent-2); color:var(--ink); }
+
+  .block { display:flex; flex-direction:column; gap:8px; }
+  .block h2 { font-family:var(--slab); font-weight:500; font-size:15px; color:var(--ink); }
+  .block h2 .sub { font-family:var(--sans); font-weight:400; font-size:12.5px; color:var(--muted); margin-left:6px; }
+  .list { display:flex; flex-direction:column; gap:8px; }
+
+  /* ───────── TASK CARD ───────── */
+  .task-card {
+    position:relative; background:var(--surface); border:1.5px solid var(--line); border-radius:12px;
+    overflow:hidden; box-shadow:var(--shadow); transition:border-color .15s, background .15s, opacity .2s;
+  }
+  .task-card:hover { border-color:var(--teal); }
+  .task-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:transparent; }
+  .task-card.order-item::before { background:var(--teal); }
+  .task-card.overdue-item::before { background:var(--red); }
+  .task-card.urgent { background:var(--urg-bg); border-color:var(--urg); }
+  .task-card.urgent::before { background:var(--urg); }
+  .task-card.done { opacity:.55; background:var(--done-bg); border-color:var(--line); }
+  .task-card.done::before { background:transparent; }
+  .task-card.done .task-text { text-decoration:line-through; color:var(--muted); }
+
+  .task-row { display:flex; align-items:flex-start; gap:12px; padding:12px 12px 12px 16px; }
+  .check {
+    width:20px; height:20px; border-radius:6px; border:2px solid var(--accent-2); background:var(--surface);
+    flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center; padding:0;
+    transition:background .15s;
+  }
+  .check svg { display:none; }
+  .task-card.done .check { background:var(--accent); border-color:var(--accent); }
+  .task-card.done .check svg { display:block; }
+
+  .task-body { flex:1; min-width:0; cursor:pointer; }
+  .task-text { font-size:14.5px; font-weight:500; line-height:1.45; word-break:break-word; display:flex; align-items:flex-start; gap:8px; }
+  .task-card.urgent .task-text { font-weight:600; color:var(--urg-ink); }
+  .task-card.urgent .urg-badge { margin-top:1px; }
+  .task-meta { display:flex; align-items:center; gap:6px 8px; margin-top:6px; flex-wrap:wrap; }
+  .assignee {
+    appearance:none; -webkit-appearance:none; border-radius:999px; padding:2px 10px; font-size:11.5px; font-weight:600;
+    border:1.5px dashed var(--line); background:transparent; color:var(--muted); cursor:pointer;
+    text-align:center; text-align-last:center;
+  }
+  .assignee.set { border-style:solid; border-color:transparent; background:var(--tint); color:var(--tint-ink); }
+  .assignee.me { background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; }
+  .assignee option { color:#0E2F38; background:#fff; }
+  .tag { font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; }
+  .tag.overdue { background:var(--red-bg); color:var(--red-ink); }
+  .tag.future { background:var(--blue-bg); color:var(--blue-ink); }
+  .by { font-size:11.5px; color:var(--muted); }
+  .when { font-size:11.5px; color:var(--muted); margin-left:auto; white-space:nowrap; }
+
+  .actions { display:flex; align-items:center; gap:2px; flex-shrink:0; }
+  .icon-btn {
+    background:none; border:0; border-radius:8px; min-width:30px; height:30px; padding:0 6px;
+    display:flex; align-items:center; justify-content:center; color:var(--muted); transition:color .12s, background .12s;
+  }
+  .icon-btn:hover { color:var(--ink); background:var(--tint); }
+  .icon-btn.has-note { color:var(--accent-2); }
+  .icon-btn.urgent-btn.on { color:var(--urg); }
+  .icon-btn.urgent-btn.on .ring { fill:var(--urg); stroke:var(--urg); }
+  .icon-btn.urgent-btn.on .mark { stroke:#fff; }
+  .icon-btn.del:hover, .icon-btn.del.armed { color:var(--red); background:var(--red-bg); }
+  .icon-btn.del.armed { font-size:12px; font-weight:600; }
+
+  .note-area { display:none; border-top:1.5px solid var(--line); padding:10px 12px 12px 48px; background:var(--surface-2); }
+  .note-area.open { display:block; }
+  .note-area textarea {
+    width:100%; min-height:60px; resize:vertical; border:1.5px solid var(--line); border-radius:8px;
+    padding:8px 10px; font-size:13px; line-height:1.55; background:var(--surface); color:var(--ink);
+  }
+  .note-area textarea:focus { border-color:var(--accent-2); outline:none; }
+  .note-area textarea::placeholder { color:var(--muted); opacity:.7; }
+
+  /* ───────── NOTES TAB ───────── */
+  .notes-head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .notes-head p { font-size:13px; color:var(--muted); }
+  .primary {
+    display:inline-flex; align-items:center; gap:7px; border:0; border-radius:10px; padding:8px 14px;
+    background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; font-size:13px; font-weight:600;
+    transition:filter .15s, transform .1s; white-space:nowrap;
+  }
+  .primary:hover { filter:brightness(1.08); }
+  .primary:active { transform:scale(.97); }
+  .note-card {
+    background:var(--surface); border:1.5px solid var(--line); border-radius:12px; box-shadow:var(--shadow);
+    padding:12px 14px 10px; display:flex; flex-direction:column; gap:8px; position:relative;
+  }
+  .note-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:12px 0 0 12px; background:linear-gradient(180deg, var(--aqua), var(--green)); }
+  .note-top { display:flex; align-items:center; gap:8px; }
+  .note-title {
+    flex:1; border:0; border-bottom:1.5px solid transparent; background:transparent; padding:2px 0;
+    font-family:var(--slab); font-weight:500; font-size:17px; color:var(--ink); min-width:0;
+  }
+  .note-title:hover { border-bottom-color:var(--line); }
+  .note-title:focus { outline:none; border-bottom-color:var(--accent-2); }
+  .note-title::placeholder { color:var(--muted); opacity:.7; }
+  .note-body {
+    width:100%; min-height:110px; resize:vertical; border:1.5px solid var(--line); border-radius:9px;
+    padding:9px 11px; font-size:13.5px; line-height:1.6; background:var(--surface-2); color:var(--ink); overflow:hidden;
+  }
+  .note-body:focus { border-color:var(--accent-2); outline:none; }
+  .note-body::placeholder { color:var(--muted); opacity:.7; }
+  .note-foot { font-size:11.5px; color:var(--muted); }
+
+  .empty { text-align:center; color:var(--muted); padding:44px 20px; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:13.5px; }
+  .empty strong { font-family:var(--slab); font-weight:500; font-size:16px; color:var(--ink); }
+  .empty p { max-width:320px; }
+
+  /* ───────── INSTALL STRIP ───────── */
+  .install-strip { background:var(--tint); border-bottom:1.5px solid var(--line); position:relative; z-index:90; }
+  .install-inner { max-width:760px; margin:0 auto; padding:10px 20px; display:flex; align-items:center; gap:12px; }
+  .install-icon { width:36px; height:36px; border-radius:9px; flex-shrink:0; }
+  .install-inner p { flex:1; min-width:0; font-size:13px; line-height:1.35; }
+  .install-inner p strong { display:block; font-family:var(--slab); font-weight:500; font-size:14.5px; }
+  .install-inner p span { color:var(--muted); }
+  @media (max-width:520px) { .install-inner p span { display:none; } }
+
+  /* ───────── SCOPE TOGGLE ───────── */
+  .today { display:flex; align-items:flex-end; justify-content:space-between; gap:10px 16px; flex-wrap:wrap; }
+  .scope { display:inline-flex; border:1.5px solid var(--line); border-radius:999px; padding:2px; background:var(--surface); }
+  .scope button { border:0; background:transparent; padding:5px 14px; border-radius:999px; font-size:12.5px; font-weight:600; color:var(--muted); }
+  .scope button[aria-pressed="true"] { background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; }
+
+  /* ───────── OT WAITLIST ───────── */
+  .wait-form { display:flex; gap:8px; flex-wrap:wrap; background:var(--surface); border:1.5px solid var(--line); border-radius:12px; padding:10px; box-shadow:var(--shadow); }
+  .wait-form input { border:1.5px solid var(--line); border-radius:9px; padding:8px 11px; font-size:13.5px; background:var(--surface-2); color:var(--ink); min-width:0; }
+  .wait-form input:focus { border-color:var(--accent-2); outline:none; }
+  .wait-form input::placeholder { color:var(--muted); opacity:.75; }
+  #waitName { flex:1 1 170px; } #waitDetails { flex:2 1 230px; }
+  .wait-card { position:relative; background:var(--surface); border:1.5px solid var(--line); border-radius:12px; box-shadow:var(--shadow); padding:11px 10px 11px 16px; display:flex; align-items:flex-start; gap:12px; }
+  .wait-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:12px 0 0 12px; background:var(--teal); }
+  .wait-card.scheduled { opacity:.65; background:var(--done-bg); box-shadow:none; }
+  .wait-card.scheduled::before { background:transparent; }
+  .pos { width:26px; height:26px; border-radius:50%; background:var(--tint); color:var(--tint-ink); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+  .wait-main { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+  .wait-main input { width:100%; border:0; border-bottom:1.5px solid transparent; background:transparent; padding:1px 0; color:var(--ink); min-width:0; }
+  .wait-main input:hover { border-bottom-color:var(--line); }
+  .wait-main input:focus { outline:none; border-bottom-color:var(--accent-2); }
+  .wait-name { font-weight:600; font-size:14.5px; }
+  .wait-details { font-size:13px; color:var(--muted) !important; }
+  .wait-details::placeholder { color:var(--muted); opacity:.6; }
+  .wait-meta { display:flex; align-items:center; gap:6px 10px; flex-wrap:wrap; margin-top:5px; font-size:11.5px; color:var(--muted); }
+  .tag.long { background:var(--urg-bg); color:var(--urg-ink); }
+  .wstatus { appearance:none; -webkit-appearance:none; border-radius:999px; padding:2px 10px; font-size:11.5px; font-weight:600; border:0; cursor:pointer; text-align:center; text-align-last:center; background:var(--tint); color:var(--tint-ink); }
+  .wstatus.contacted { background:var(--blue-bg); color:var(--blue-ink); }
+  .wstatus.scheduled { background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; }
+  .wstatus option { color:#0E2F38; background:#fff; }
+
+  /* ───────── TOAST / MODAL ───────── */
+  .toast {
+    position:fixed; left:50%; bottom:calc(22px + env(safe-area-inset-bottom)); transform:translate(-50%, 14px);
+    max-width:min(92vw, 460px); background:var(--ink); color:var(--bg); border-radius:10px;
+    padding:10px 18px; font-size:13px; font-weight:500; opacity:0; pointer-events:none; z-index:60;
+    transition:opacity .2s, transform .2s;
+  }
+  .toast.show { opacity:1; transform:translate(-50%, 0); }
+  .modal { position:fixed; inset:0; z-index:80; background:rgba(5,25,31,.62); display:flex; align-items:center; justify-content:center; padding:20px; }
+  .sheet { background:var(--surface); border-radius:16px; padding:24px 22px 18px; width:min(380px,100%); text-align:center; box-shadow:0 20px 50px rgba(0,0,0,.35); }
+  .sheet h2 { font-family:var(--slab); font-weight:500; font-size:21px; }
+  .sheet p { color:var(--muted); font-size:13.5px; margin:4px 0 16px; }
+  .who { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  .who button {
+    min-width:64px; padding:10px 14px; border-radius:10px; border:1.5px solid var(--line); background:var(--surface-2);
+    font-weight:600; font-size:14px; transition:background .15s, color .15s, border-color .15s;
+  }
+  .who button:hover { background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; border-color:transparent; }
+  .skip { margin-top:14px; background:none; border:0; color:var(--muted); font-size:12.5px; text-decoration:underline; }
+
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .spinner { animation:spin .8s linear infinite; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+  @media (max-width:520px) {
+    .brand-title { font-size:19px; padding-left:10px; }
+    .today h1 { font-size:22px; }
+    .note-area { padding-left:16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="banner">
+  <div class="banner-inner">
+    <img class="brand-logo" src="logo-white.png" alt="Ivy Health">
+    <span class="brand-title">Tasks</span>
+    <div class="banner-tools">
+      <span class="pill" id="syncPill" title="Connection status"><span class="dot" id="syncDot"></span><span id="syncLabel">Connecting</span></span>
+      <button class="pill bell" id="bellBtn" type="button" aria-label="Notifications">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+          <line class="slash" x1="4" y1="4" x2="20" y2="20"/>
+        </svg>
+      </button>
+      <label class="pill">You <select id="meSelect" aria-label="Who are you"></select></label>
+    </div>
+  </div>
+</header>
+
+<div class="install-strip" id="installStrip" hidden>
+  <div class="install-inner">
+    <img class="install-icon" src="icon-192.png" alt="" width="36" height="36">
+    <p><strong>Install IvyRehab Tasks</strong><span>One tap from your taskbar or home screen, with alerts for new tasks.</span></p>
+    <button class="primary" id="installBtn" type="button">Install app</button>
+    <button class="icon-btn" id="installClose" type="button" aria-label="Dismiss install banner" style="font-size:18px">×</button>
+  </div>
+</div>
+
+<main class="page">
+  <section class="today">
+    <div>
+      <h1 id="todayHeading"></h1>
+      <p id="todaySummary">Loading your list</p>
+    </div>
+    <div class="scope" role="group" aria-label="Which tasks to show" title="My list shows tasks assigned to you plus every unassigned task">
+      <button type="button" data-scope="mine" aria-pressed="true">My list</button>
+      <button type="button" data-scope="all" aria-pressed="false">Everyone</button>
+    </div>
+  </section>
+
+  <section class="capture" aria-label="Add tasks">
+    <div class="capture-row">
+      <textarea id="chatInput" placeholder="Dump tasks here, one per line. Add @JW to assign."></textarea>
+      <button class="send" id="sendBtn" type="button" aria-label="Add tasks">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 16V4M4 10l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <div class="capture-opts">
+      <label class="opt">Due <input type="date" id="taskDate"></label>
+      <label class="opt">Assign to <select id="assignSel"></select></label>
+      <button class="urgent-toggle" id="urgentToggle" type="button" aria-pressed="false"><span class="bang" aria-hidden="true">!</span>Urgent</button>
+      <span class="status" id="parseStatus" role="status" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="Lists">
+    <button class="tab" role="tab" id="tab-btn-tasks" data-tab="tasks" aria-selected="true">Tasks <span class="count" id="tasksCount">0</span></button>
+    <button class="tab" role="tab" id="tab-btn-orders" data-tab="orders" aria-selected="false">Orders <span class="count" id="ordersCount">0</span></button>
+    <button class="tab" role="tab" id="tab-btn-waitlist" data-tab="waitlist" aria-selected="false">OT Waitlist <span class="count" id="waitCount">0</span></button>
+    <button class="tab" role="tab" id="tab-btn-notes" data-tab="notes" aria-selected="false">Notes <span class="count" id="notesCount">0</span></button>
+  </nav>
+
+  <!-- TASKS -->
+  <section class="panel active" id="panel-tasks" role="tabpanel" aria-labelledby="tab-btn-tasks">
+    <div class="tools"><button class="ghost" id="clearTasks" type="button" hidden></button></div>
+    <div class="block" id="overdueBlock" hidden><h2>Carried forward</h2><div class="list" id="overdueList"></div></div>
+    <div class="block" id="todayBlock" hidden><h2>Today</h2><div class="list" id="todayList"></div></div>
+    <div class="block" id="futureBlock" hidden><h2>Upcoming</h2><div class="list" id="futureList"></div></div>
+    <div class="empty" id="emptyTasks"><strong>Nothing on the list</strong><p>Type a task above and press the arrow. Anything you don't finish carries forward until you check it off.</p></div>
+  </section>
+
+  <!-- ORDERS -->
+  <section class="panel" id="panel-orders" role="tabpanel" aria-labelledby="tab-btn-orders">
+    <div class="tools"><button class="ghost" id="clearOrders" type="button" hidden></button></div>
+    <div class="block" id="ordersPendingBlock" hidden><h2>To order</h2><div class="list" id="ordersPendingList"></div></div>
+    <div class="block" id="ordersDoneBlock" hidden><h2>Ordered</h2><div class="list" id="ordersDoneList"></div></div>
+    <div class="empty" id="emptyOrders"><strong>No orders yet</strong><p>Start a task with "Order" and it lands here, for example "Order PT bands".</p></div>
+  </section>
+
+  <!-- OT WAITLIST -->
+  <section class="panel" id="panel-waitlist" role="tabpanel" aria-labelledby="tab-btn-waitlist">
+    <div class="wait-form">
+      <input id="waitName" type="text" placeholder="Name or initials" autocomplete="off" aria-label="Patient name or initials">
+      <input id="waitDetails" type="text" placeholder="Details: referral reason, phone, best times" autocomplete="off" aria-label="Details">
+      <button class="primary" id="waitAdd" type="button">Add to waitlist</button>
+    </div>
+    <div class="block" id="waitActiveBlock" hidden><h2>Waiting<span class="sub">in the order they were added</span></h2><div class="list" id="waitActiveList"></div></div>
+    <div class="block" id="waitSchedBlock" hidden><h2>Scheduled</h2><div class="list" id="waitSchedList"></div></div>
+    <div class="empty" id="emptyWait"><strong>Waitlist is empty</strong><p id="emptyWaitMsg">Add the first patient above. Everyone sees the list in the order people were added.</p></div>
+  </section>
+
+  <!-- NOTES -->
+  <section class="panel" id="panel-notes" role="tabpanel" aria-labelledby="tab-btn-notes">
+    <div class="notes-head">
+      <p>Shared with everyone. Changes appear as they're typed.</p>
+      <button class="primary" id="addSection" type="button">+ New section</button>
+    </div>
+    <div class="list" id="notesList"></div>
+    <div class="empty" id="emptyNotes"><strong>No sections yet</strong><p id="emptyNotesMsg">Add a section for meeting notes, vendor numbers, or anything the team needs to see.</p></div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="modal" id="whoModal" role="dialog" aria-modal="true" aria-labelledby="whoTitle" hidden>
+  <div class="sheet">
+    <h2 id="whoTitle">Who's using this?</h2>
+    <p>So the team sees who added what, and you get alerts for tasks assigned to you.</p>
+    <div class="who" id="whoButtons"></div>
+    <button class="skip" id="whoSkip" type="button">Skip for now</button>
+  </div>
+</div>
+
+<div class="modal" id="installHelp" role="dialog" aria-modal="true" aria-labelledby="installHelpTitle" hidden>
+  <div class="sheet">
+    <h2 id="installHelpTitle">Install on this device</h2>
+    <p id="installHelpBody"></p>
+    <button class="primary" id="installHelpClose" type="button" style="margin:0 auto">Got it</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+'use strict';
+
+/* ───────── CONFIG ───────── */
+const SUPA_URL = 'https://wjctoqrenbcfnpthqckk.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqY3RvcXJlbmJjZm5wdGhxY2trIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwNzYxMDgsImV4cCI6MjEwNzY1MjEwOH0.7O9iioY2jkAWn_xCT2OFYtAebpG89HrXf0wmWCkhDSw';
+const PEOPLE = ['AR', 'ASW', 'JW', 'AC', 'OG'];
+const BASE_TITLE = 'IvyRehab Tasks';
+
+const $ = id => document.getElementById(id);
+let sb = null;
+try { if (window.supabase) sb = window.supabase.createClient(SUPA_URL, SUPA_KEY); } catch (e) { console.error(e); }
+
+/* ───────── STATE ───────── */
+let tasks = [], notes = [], waitlist = [], notesError = '', waitError = '';
+let scope = localStorage.getItem('ivy_scope') || 'mine';
+let deferredPrompt = null;
+let me = localStorage.getItem('ivy_me') || '';
+let initialized = false, fetchOk = false, rtOk = false, urgentOn = false;
+const pendingIds = new Set(), deletingIds = new Set(), openNotes = new Set();
+const pendingNotes = new Set(), deletingNotes = new Set();
+const pendingWait = new Set(), deletingWait = new Set(), waitTimers = {};
+// My list = tasks assigned to me + every unassigned task. Everyone = all tasks.
+const visible = t => scope === 'all' || !me || !t.assignee || t.assignee === me;
+const noteTimers = {}, sectionTimers = {};
+
+/* ───────── HELPERS ───────── */
+const pad = n => String(n).padStart(2, '0');
+const fmtDate = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const todayStr = () => fmtDate(new Date());
+const uid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'id' + Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
+
+function formatDisplayDate(str) {
+  if (!str) return '';
+  const [y, m, d] = str.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const t = new Date(); t.setHours(0, 0, 0, 0);
+  const diff = Math.round((date - t) / 86400000);
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Tomorrow';
+  if (diff === -1) return 'Yesterday';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+function timeAgo(iso) {
+  if (!iso) return '';
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 45) return 'just now';
+  if (s < 3600) return Math.round(s / 60) + ' min ago';
+  if (s < 86400) return Math.round(s / 3600) + ' hr ago';
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+const fromRow = r => ({
+  id: String(r.id), text: r.text, date: r.date, done: !!r.done, created: r.created,
+  isOrder: !!r.is_order, note: r.note || '', assignee: r.assignee || '', urgent: !!r.urgent,
+  addedBy: r.added_by || '', createdAt: r.created_at || ''
+});
+const toRow = t => ({
+  id: t.id, text: t.text, date: t.date, done: t.done, created: t.created, is_order: t.isOrder,
+  note: t.note || '', assignee: t.assignee || '', urgent: !!t.urgent, added_by: t.addedBy || ''
+});
+const waitFromRow = r => ({
+  id: String(r.id), name: r.name || '', details: r.details || '', status: r.status || 'waiting',
+  addedBy: r.added_by || '', updatedBy: r.updated_by || '', createdAt: r.created_at || '', updatedAt: r.updated_at || ''
+});
+const noteFromRow = r => ({
+  id: String(r.id), title: r.title || '', body: r.body || '',
+  updatedBy: r.updated_by || '', updatedAt: r.updated_at || '', createdAt: r.created_at || ''
+});
+
+let toastTimer;
+function showToast(msg, ms = 3000) {
+  const el = $('toast'); el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), ms);
+}
+let statusTimer;
+function showStatus(msg, kind, ms = 3000) {
+  const el = $('parseStatus'); el.textContent = msg; el.className = 'status' + (kind ? ' ' + kind : '');
+  clearTimeout(statusTimer); if (ms) statusTimer = setTimeout(() => { el.textContent = ''; el.className = 'status'; }, ms);
+}
+function updateSync() {
+  const dot = $('syncDot'), label = $('syncLabel');
+  let state = 'error', text = 'Offline';
+  if (!sb) { text = 'Offline'; }
+  else if (fetchOk && rtOk) { state = 'live'; text = 'Live'; }
+  else if (fetchOk) { state = 'poll'; text = 'Refreshing'; }
+  else if (!initialized) { state = ''; text = 'Connecting'; }
+  dot.className = 'dot' + (state ? ' ' + state : '');
+  label.textContent = text;
+  $('syncPill').title = state === 'live' ? 'Real-time sync is on' : state === 'poll' ? 'Real-time link is down; checking for changes every 20 seconds' : 'Not connected to the shared list';
+}
+function dbError(e) {
+  console.error(e);
+  const m = (e && e.message) || String(e);
+  if (/column|relation|schema cache|does not exist/i.test(m)) showStatus('Database needs its one-time update. Run setup.sql in Supabase.', 'error', 9000);
+  else showStatus('Sync problem: ' + m, 'error', 6000);
+}
+
+/* ───────── PARSING ───────── */
+const ASSIGN_RE = new RegExp('(^|\\s)@(' + PEOPLE.join('|') + ')\\b', 'gi');
+function localParse(raw, defaultDate) {
+  const now = new Date();
+  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const inferDate = text => {
+    const lower = text.toLowerCase();
+    if (/\btomorrow\b/.test(lower)) { const d = new Date(now); d.setDate(d.getDate() + 1); return fmtDate(d); }
+    const dm = lower.match(/\bby\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/);
+    if (dm) { const t = days.indexOf(dm[1]); const d = new Date(now); d.setDate(d.getDate() + ((t - d.getDay() + 7) % 7 || 7)); return fmtDate(d); }
+    const mm = lower.match(/\bby\s+(\d{1,2})\/(\d{1,2})\b/);
+    if (mm) return fmtDate(new Date(now.getFullYear(), parseInt(mm[1]) - 1, parseInt(mm[2])));
+    return defaultDate;
+  };
+  const strip = t => t.replace(/\bby\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/gi, '')
+    .replace(/\bby\s+tomorrow\b/gi, '').replace(/\btomorrow\b/gi, '')
+    .replace(/\bby\s+\d{1,2}\/\d{1,2}\b/gi, '').replace(/\s{2,}/g, ' ').trim();
+  return raw.split('\n')
+    .map(l => l.replace(/^\s*(?:[-•*]|\d+[.)])\s*/, '').trim())
+    .filter(l => l.length > 1)
+    .map(line => {
+      let assignee = '';
+      const noTag = line.replace(ASSIGN_RE, (m, sp, who) => { assignee = who.toUpperCase(); return sp; }).trim();
+      return { text: strip(noTag), date: inferDate(noTag), isOrder: /^order\b/i.test(noTag), assignee };
+    })
+    .filter(p => p.text.length > 0);
+}
+
+/* ───────── DATA: LOAD + RECONCILE ───────── */
+function editingNoteId() { const a = document.activeElement; return a && a.dataset && a.dataset.noteFor ? a.dataset.noteFor : null; }
+function editingSectionId() { const a = document.activeElement; return a && a.dataset && a.dataset.sectionFor ? a.dataset.sectionFor : null; }
+
+function reconcileTasks(rows, notifyNew) {
+  const before = JSON.stringify(tasks);
+  const incoming = rows.map(fromRow).filter(t => !deletingIds.has(t.id));
+  const known = new Set(tasks.map(t => t.id));
+  const fresh = incoming.filter(t => !known.has(t.id));
+  const ed = editingNoteId();
+  const local = new Map(tasks.map(t => [t.id, t]));
+  const merged = incoming.map(t => (ed === t.id && local.get(t.id)) ? { ...t, note: local.get(t.id).note } : t);
+  const incIds = new Set(incoming.map(t => t.id));
+  const keep = tasks.filter(t => pendingIds.has(t.id) && !incIds.has(t.id));
+  tasks = [...merged, ...keep];
+  if (JSON.stringify(tasks) !== before) render();
+  if (notifyNew && initialized && fresh.length) queueAnnounce(fresh);
+}
+function reconcileNotes(rows) {
+  const ed = editingSectionId();
+  const local = new Map(notes.map(n => [n.id, n]));
+  const incoming = rows.map(noteFromRow).filter(n => !deletingNotes.has(n.id))
+    .map(n => (ed === n.id && local.get(n.id)) ? local.get(n.id) : n);
+  const incIds = new Set(incoming.map(n => n.id));
+  const keep = notes.filter(n => pendingNotes.has(n.id) && !incIds.has(n.id));
+  notes = [...incoming, ...keep];
+}
+function reconcileWait(rows, notifyNew) {
+  const known = new Set(waitlist.map(w => w.id));
+  const ed = editingWaitId();
+  const local = new Map(waitlist.map(w => [w.id, w]));
+  const incoming = rows.map(waitFromRow).filter(w => !deletingWait.has(w.id))
+    .map(w => (ed === w.id && local.get(w.id)) ? local.get(w.id) : w);
+  const fresh = incoming.filter(w => !known.has(w.id));
+  const incIds = new Set(incoming.map(w => w.id));
+  const keep = waitlist.filter(w => pendingWait.has(w.id) && !incIds.has(w.id));
+  waitlist = [...incoming, ...keep];
+  if (notifyNew && initialized) fresh.forEach(w => push('New OT waitlist entry', w.name + (w.addedBy ? ' from ' + w.addedBy : ''), w.id));
+}
+function editingWaitId() { const a = document.activeElement; return a && a.dataset && a.dataset.waitFor ? a.dataset.waitFor : null; }
+async function fetchAll(notifyNew) {
+  const t = await sb.from('tasks').select('*').order('created_at', { ascending: true });
+  if (t.error) { fetchOk = false; updateSync(); throw t.error; }
+  fetchOk = true;
+  reconcileTasks(t.data || [], notifyNew);
+  const n = await sb.from('notes').select('*').order('created_at', { ascending: true });
+  if (n.error) notesError = n.error.message || 'Notes unavailable';
+  else { notesError = ''; reconcileNotes(n.data || []); }
+  renderNotes();
+  const w = await sb.from('waitlist').select('*').order('created_at', { ascending: true });
+  if (w.error) waitError = w.error.message || 'Waitlist unavailable';
+  else { waitError = ''; reconcileWait(w.data || [], notifyNew); }
+  renderWait();
+  updateSync();
+}
+
+/* ───────── REALTIME ───────── */
+function onTaskChange(p) {
+  if (p.eventType === 'INSERT') {
+    const t = fromRow(p.new);
+    if (deletingIds.has(t.id) || tasks.some(x => x.id === t.id)) return;
+    tasks.push(t); render(); queueAnnounce([t]);
+  } else if (p.eventType === 'UPDATE') {
+    const t = fromRow(p.new), ed = editingNoteId();
+    if (tasks.some(x => x.id === t.id)) tasks = tasks.map(x => x.id === t.id ? { ...t, note: ed === t.id ? x.note : t.note } : x);
+    else tasks.push(t);
+    render();
+  } else if (p.eventType === 'DELETE') {
+    const id = String(p.old.id); tasks = tasks.filter(x => x.id !== id); render();
+  }
+}
+function onNoteChange(p) {
+  if (p.eventType === 'DELETE') { const id = String(p.old.id); notes = notes.filter(n => n.id !== id); }
+  else {
+    const n = noteFromRow(p.new), ed = editingSectionId();
+    if (deletingNotes.has(n.id)) return;
+    if (notes.some(x => x.id === n.id)) { if (ed !== n.id) notes = notes.map(x => x.id === n.id ? n : x); }
+    else notes.push(n);
+  }
+  renderNotes();
+}
+function onWaitChange(p) {
+  if (p.eventType === 'DELETE') { const id = String(p.old.id); waitlist = waitlist.filter(w => w.id !== id); }
+  else {
+    const w = waitFromRow(p.new), ed = editingWaitId();
+    if (deletingWait.has(w.id)) return;
+    if (waitlist.some(x => x.id === w.id)) { waitlist = waitlist.map(x => x.id === w.id ? (ed === w.id ? { ...w, name: x.name, details: x.details } : w) : x); }
+    else { waitlist.push(w); if (initialized) push('New OT waitlist entry', w.name + (w.addedBy ? ' from ' + w.addedBy : ''), w.id); }
+  }
+  renderWait();
+}
+function startRealtime() {
+  if (!sb) return;
+  sb.channel('ivy-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, onTaskChange)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, onNoteChange)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'waitlist' }, onWaitChange)
+    .subscribe((status, err) => {
+      if (status === 'SUBSCRIBED') { rtOk = true; updateSync(); fetchAll(true).catch(() => {}); }
+      else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') { rtOk = false; updateSync(); if (err) console.warn(err); }
+    });
+}
+
+/* ───────── NOTIFICATIONS ───────── */
+let annQ = [], annTimer, unseen = 0;
+function queueAnnounce(list) { annQ.push(...list); clearTimeout(annTimer); annTimer = setTimeout(flushAnnounce, 500); }
+function flushAnnounce() {
+  // Only alert for tasks that belong on my list: unassigned, or assigned to me
+  const list = annQ.splice(0).filter(t => !me || !t.assignee || t.assignee === me);
+  if (!list.length) return;
+  if (list.length > 3) {
+    const by = [...new Set(list.map(t => t.addedBy).filter(Boolean))].join(', ') || 'Someone';
+    const mine = list.filter(t => t.assignee && t.assignee === me).length;
+    const urgent = list.some(t => t.urgent);
+    push((urgent ? '❗ ' : '') + list.length + ' new tasks', by + ' added them' + (mine ? ', ' + mine + ' for you' : ''), 'batch');
+    return;
+  }
+  list.forEach(t => {
+    const mine = t.assignee && t.assignee === me;
+    const who = t.addedBy || 'Someone';
+    const head = mine ? 'Assigned to you' : t.isOrder ? 'New order' : 'New task';
+    const body = t.text + (t.assignee && !mine ? ' (for ' + t.assignee + ')' : '') + (t.addedBy ? ' from ' + who : '');
+    push((t.urgent ? '❗ URGENT: ' : '') + head, body, t.id);
+  });
+}
+function appIsFocused() { return document.visibilityState === 'visible' && document.hasFocus(); }
+function push(title, body, tag) {
+  showToast(title + ': ' + body, 4500);
+  notify(title, body, tag);
+  if (!appIsFocused()) {
+    unseen++; document.title = `(${unseen}) ${BASE_TITLE}`;
+    try { if (navigator.setAppBadge) navigator.setAppBadge(unseen); } catch (e) {}
+  }
+}
+function clearUnseen() {
+  if (!unseen) return;
+  unseen = 0; document.title = BASE_TITLE;
+  try { if (navigator.clearAppBadge) navigator.clearAppBadge(); } catch (e) {}
+}
+async function notify(title, body, tag) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (localStorage.getItem('ivy_mute') === '1' || appIsFocused()) return;
+  const opts = { body, icon: 'icon-192.png', badge: 'icon-192.png', tag: tag || 'ivy', renotify: true };
+  try {
+    const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
+    if (reg) { await reg.showNotification(title, opts); return; }
+  } catch (e) {}
+  try { new Notification(title, opts); } catch (e) {}
+}
+function refreshBell() {
+  const b = $('bellBtn');
+  if (!('Notification' in window)) { b.hidden = true; return; }
+  const p = Notification.permission, muted = localStorage.getItem('ivy_mute') === '1';
+  const state = p === 'granted' ? (muted ? 'muted' : 'on') : p === 'denied' ? 'denied' : 'off';
+  b.dataset.state = state;
+  const tips = { on: 'Alerts are on. Click to mute.', muted: 'Alerts are muted. Click to turn on.', off: 'Turn on alerts for new tasks', denied: 'Alerts are blocked in browser settings' };
+  b.title = tips[state]; b.setAttribute('aria-label', tips[state]);
+}
+async function onBell() {
+  if (!('Notification' in window)) return;
+  const p = Notification.permission;
+  if (p === 'default') {
+    const res = await Notification.requestPermission();
+    if (res === 'granted') { localStorage.removeItem('ivy_mute'); showToast('Alerts on. You will be told when tasks are added.'); }
+  } else if (p === 'granted') {
+    const muted = localStorage.getItem('ivy_mute') === '1';
+    if (muted) { localStorage.removeItem('ivy_mute'); showToast('Alerts on'); } else { localStorage.setItem('ivy_mute', '1'); showToast('Alerts muted'); }
+  } else showToast('Alerts are blocked. Allow notifications for this site in your browser settings.', 5000);
+  refreshBell();
+}
+
+/* ───────── TASK ACTIONS ───────── */
+async function handleAdd() {
+  const raw = $('chatInput').value.trim();
+  if (!raw) return;
+  if (!sb) { showStatus('Cannot reach the server. Check your connection.', 'error', 5000); return; }
+  const defaultDate = $('taskDate').value || todayStr();
+  const assignSel = $('assignSel').value, urgent = urgentOn;
+  const parsed = localParse(raw, defaultDate);
+  if (!parsed.length) { showStatus('Nothing to add', 'error'); return; }
+
+  const btn = $('sendBtn'); btn.classList.add('loading');
+  const made = parsed.map(p => ({
+    id: uid(), text: p.text, date: p.date, done: false, created: todayStr(), isOrder: p.isOrder,
+    note: '', assignee: p.assignee || assignSel, urgent, addedBy: me
+  }));
+  made.forEach(t => { tasks.push(t); pendingIds.add(t.id); });
+  render();
+  $('chatInput').value = ''; $('assignSel').value = ''; setUrgent(false);
+  showStatus('Adding…', '', 0);
+
+  const { error } = await sb.from('tasks').insert(made.map(toRow));
+  made.forEach(t => pendingIds.delete(t.id));
+  btn.classList.remove('loading');
+  if (error) {
+    const ids = new Set(made.map(t => t.id));
+    tasks = tasks.filter(t => !ids.has(t.id)); render();
+    $('chatInput').value = raw; dbError(error); return;
+  }
+  showStatus(`Added ${made.length} task${made.length > 1 ? 's' : ''}`, 'success');
+  if (made.every(t => t.isOrder)) switchTab('orders');
+}
+
+async function patchTask(id, fields) {
+  const t = tasks.find(x => x.id === id); if (!t) return;
+  Object.assign(t, fields); render();
+  if (!sb) return;
+  const row = {};
+  ['done', 'note', 'assignee', 'urgent'].forEach(k => { if (k in fields) row[k] = fields[k]; });
+  const { error } = await sb.from('tasks').update(row).eq('id', id);
+  if (error) dbError(error);
+}
+async function deleteTask(id) {
+  deletingIds.add(id); tasks = tasks.filter(t => t.id !== id); render();
+  if (sb) { const { error } = await sb.from('tasks').delete().eq('id', id); if (error) dbError(error); }
+  setTimeout(() => deletingIds.delete(id), 5000);
+}
+async function clearDone(isOrder) {
+  const gone = tasks.filter(t => t.isOrder === isOrder && t.done && visible(t));
+  if (!gone.length) return;
+  const ids = gone.map(t => t.id);
+  ids.forEach(id => deletingIds.add(id));
+  tasks = tasks.filter(t => !ids.includes(t.id)); render();
+  showToast(`${ids.length} completed removed`);
+  if (sb) { const { error } = await sb.from('tasks').delete().in('id', ids); if (error) dbError(error); }
+  setTimeout(() => ids.forEach(id => deletingIds.delete(id)), 5000);
+}
+function setUrgent(on) { urgentOn = on; $('urgentToggle').setAttribute('aria-pressed', String(on)); }
+
+/* ───────── RENDER: TASKS ───────── */
+function render() {
+  const ae = document.activeElement;
+  const restore = ae && ae.dataset && ae.dataset.noteFor ? { id: ae.dataset.noteFor, s: ae.selectionStart, e: ae.selectionEnd } : null;
+
+  const today = todayStr();
+  const vis = tasks.filter(visible);
+  const reg = vis.filter(t => !t.isOrder), ord = vis.filter(t => t.isOrder);
+  const byUrgent = (a, b) => (b.urgent ? 1 : 0) - (a.urgent ? 1 : 0);
+
+  const overdue = reg.filter(t => !t.done && t.date < today).sort(byUrgent);
+  const activeToday = reg.filter(t => !t.done && t.date === today).sort(byUrgent);
+  const doneReg = reg.filter(t => t.done);
+  const future = reg.filter(t => !t.done && t.date > today).sort(byUrgent);
+  const open = overdue.length + activeToday.length + future.length;
+  $('tasksCount').textContent = open;
+  $('emptyTasks').hidden = reg.length > 0;
+  setBlock('overdueBlock', 'overdueList', overdue, 'overdue');
+  setBlock('todayBlock', 'todayList', [...activeToday, ...doneReg.filter(t => t.date <= today)], 'today');
+  setBlock('futureBlock', 'futureList', [...future, ...doneReg.filter(t => t.date > today)], 'future');
+
+  const ordPending = ord.filter(t => !t.done).sort(byUrgent), ordDone = ord.filter(t => t.done);
+  $('ordersCount').textContent = ordPending.length;
+  $('emptyOrders').hidden = ord.length > 0;
+  setBlock('ordersPendingBlock', 'ordersPendingList', ordPending, 'order');
+  setBlock('ordersDoneBlock', 'ordersDoneList', ordDone, 'order');
+
+  const dReg = doneReg.length, dOrd = ordDone.length;
+  $('clearTasks').hidden = !dReg; $('clearTasks').textContent = `Remove ${dReg} completed`;
+  $('clearOrders').hidden = !dOrd; $('clearOrders').textContent = `Remove ${dOrd} completed`;
+
+  const openVis = vis.filter(t => !t.done);
+  const urgentOpen = openVis.filter(t => t.urgent).length;
+  const unassignedOpen = openVis.filter(t => !t.assignee).length;
+  const mineOpen = me ? openVis.filter(t => t.assignee === me).length : 0;
+  const parts = [`${openVis.length} open`];
+  if (urgentOpen) parts.push(`${urgentOpen} urgent`);
+  if (me && scope === 'mine') { parts.push(`${mineOpen} yours`); parts.push(`${unassignedOpen} unassigned`); }
+  else if (me) parts.push(`${mineOpen} assigned to you`);
+  $('todaySummary').textContent = initialized || tasks.length ? parts.join(', ') : 'Loading your list';
+
+  if (restore) {
+    const el = [...document.querySelectorAll('textarea[data-note-for]')].find(x => x.dataset.noteFor === restore.id);
+    if (el) { el.focus({ preventScroll: true }); try { el.setSelectionRange(restore.s, restore.e); } catch (e) {} }
+  }
+}
+function setBlock(blockId, listId, items, type) {
+  $(blockId).hidden = !items.length;
+  const el = $(listId); el.innerHTML = '';
+  items.forEach(t => el.appendChild(buildCard(t, type)));
+}
+
+const SVG = {
+  check: '<svg width="11" height="9" viewBox="0 0 11 9" fill="none" aria-hidden="true"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  note: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 2h12v9H9l-3 3V11H2V2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+  urgent: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle class="ring" cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.6"/><path class="mark" d="M10 5.5v5.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="14" r="1.15" fill="currentColor" class="mark"/></svg>'
+};
+
+function buildCard(task, type) {
+  const card = document.createElement('div');
+  card.className = 'task-card' + (task.done ? ' done' : '') + (task.urgent ? ' urgent' : '')
+    + (task.isOrder ? ' order-item' : '') + (type === 'overdue' && !task.done ? ' overdue-item' : '');
+  card.dataset.id = task.id;
+
+  const row = document.createElement('div'); row.className = 'task-row';
+
+  const check = document.createElement('button');
+  check.type = 'button'; check.className = 'check'; check.innerHTML = SVG.check;
+  check.setAttribute('role', 'checkbox'); check.setAttribute('aria-checked', String(task.done));
+  check.setAttribute('aria-label', (task.done ? 'Mark not done: ' : 'Mark done: ') + task.text);
+  check.addEventListener('click', e => { e.stopPropagation(); patchTask(task.id, { done: !task.done }); });
+  row.appendChild(check);
+
+  const body = document.createElement('div'); body.className = 'task-body';
+  const txt = document.createElement('div'); txt.className = 'task-text';
+  if (task.urgent) { const b = document.createElement('span'); b.className = 'urg-badge'; b.textContent = '!'; b.title = 'Urgent'; txt.appendChild(b); }
+  const span = document.createElement('span'); span.textContent = task.text; txt.appendChild(span);
+  body.appendChild(txt);
+
+  const meta = document.createElement('div'); meta.className = 'task-meta';
+  const sel = document.createElement('select');
+  sel.className = 'assignee' + (task.assignee ? ' set' : '') + (task.assignee && task.assignee === me ? ' me' : '');
+  sel.setAttribute('aria-label', 'Assigned to');
+  ['', ...PEOPLE].forEach(p => { const o = document.createElement('option'); o.value = p; o.textContent = p || 'Unassigned'; sel.appendChild(o); });
+  sel.value = task.assignee || '';
+  sel.style.width = ((task.assignee || 'Unassigned').length * 0.64 + 2.1) + 'em';
+  sel.addEventListener('click', e => e.stopPropagation());
+  sel.addEventListener('change', e => {
+    e.stopPropagation(); const who = sel.value;
+    patchTask(task.id, { assignee: who });
+    if (who && me && who !== me && scope === 'mine') showToast(`Assigned to ${who}. It now shows on their list.`);
+  });
+  meta.appendChild(sel);
+  if (type === 'overdue' && !task.done) { const g = document.createElement('span'); g.className = 'tag overdue'; g.textContent = 'Overdue'; meta.appendChild(g); }
+  else if (type === 'future' && !task.done) { const g = document.createElement('span'); g.className = 'tag future'; g.textContent = 'Upcoming'; meta.appendChild(g); }
+  if (task.addedBy) { const b = document.createElement('span'); b.className = 'by'; b.textContent = 'from ' + task.addedBy; meta.appendChild(b); }
+  if (task.date) { const d = document.createElement('span'); d.className = 'when'; d.textContent = formatDisplayDate(task.date); meta.appendChild(d); }
+  body.appendChild(meta);
+  row.appendChild(body);
+
+  const actions = document.createElement('div'); actions.className = 'actions';
+  const noteBtn = document.createElement('button');
+  noteBtn.type = 'button'; noteBtn.className = 'icon-btn' + (task.note ? ' has-note' : ''); noteBtn.innerHTML = SVG.note;
+  noteBtn.title = task.note ? 'View or edit note' : 'Add note'; noteBtn.setAttribute('aria-label', noteBtn.title);
+  const urgBtn = document.createElement('button');
+  urgBtn.type = 'button'; urgBtn.className = 'icon-btn urgent-btn' + (task.urgent ? ' on' : ''); urgBtn.innerHTML = SVG.urgent;
+  urgBtn.title = task.urgent ? 'Remove urgent' : 'Mark urgent'; urgBtn.setAttribute('aria-label', urgBtn.title); urgBtn.setAttribute('aria-pressed', String(task.urgent));
+  urgBtn.addEventListener('click', e => { e.stopPropagation(); patchTask(task.id, { urgent: !task.urgent }); });
+  const del = document.createElement('button');
+  del.type = 'button'; del.className = 'icon-btn del'; del.textContent = '×'; del.style.fontSize = '18px';
+  del.title = 'Delete for everyone'; del.setAttribute('aria-label', 'Delete task');
+  let armTimer;
+  del.addEventListener('click', e => {
+    e.stopPropagation();
+    if (del.classList.contains('armed')) { deleteTask(task.id); return; }
+    del.classList.add('armed'); del.textContent = 'Delete?'; del.style.fontSize = '';
+    armTimer = setTimeout(() => { del.classList.remove('armed'); del.textContent = '×'; del.style.fontSize = '18px'; }, 3000);
+  });
+  actions.append(noteBtn, urgBtn, del);
+  row.appendChild(actions);
+  card.appendChild(row);
+
+  const area = document.createElement('div'); area.className = 'note-area' + (openNotes.has(task.id) ? ' open' : '');
+  const ta = document.createElement('textarea');
+  ta.placeholder = 'Add a note…'; ta.value = task.note || ''; ta.dataset.noteFor = task.id; ta.setAttribute('aria-label', 'Task note');
+  ta.addEventListener('click', e => e.stopPropagation());
+  ta.addEventListener('input', () => {
+    const t = tasks.find(x => x.id === task.id); if (!t) return;
+    t.note = ta.value; noteBtn.classList.toggle('has-note', !!ta.value);
+    clearTimeout(noteTimers[task.id]);
+    noteTimers[task.id] = setTimeout(async () => {
+      const cur = tasks.find(x => x.id === task.id); if (!cur || !sb) return;
+      const { error } = await sb.from('tasks').update({ note: cur.note }).eq('id', task.id); if (error) dbError(error);
+    }, 700);
+  });
+  area.appendChild(ta); card.appendChild(area);
+
+  const toggle = e => {
+    e.stopPropagation();
+    const open = area.classList.toggle('open');
+    if (open) { openNotes.add(task.id); setTimeout(() => ta.focus(), 40); } else openNotes.delete(task.id);
+  };
+  body.addEventListener('click', toggle); noteBtn.addEventListener('click', toggle);
+  return card;
+}
+
+/* ───────── NOTES TAB ───────── */
+const sortNotes = () => notes.slice().sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+const footText = n => (n.updatedBy || n.updatedAt && n.body) ? `Last edited${n.updatedBy ? ' by ' + n.updatedBy : ''} ${timeAgo(n.updatedAt)}`.trim() : 'New section';
+function autoGrow(el) { el.style.height = 'auto'; el.style.height = Math.max(110, el.scrollHeight + 2) + 'px'; }
+
+function buildNoteCard(n) {
+  const card = document.createElement('article'); card.className = 'note-card'; card.dataset.id = n.id;
+  const top = document.createElement('div'); top.className = 'note-top';
+  const title = document.createElement('input');
+  title.className = 'note-title'; title.placeholder = 'Section title'; title.value = n.title;
+  title.dataset.sectionFor = n.id; title.dataset.field = 'title'; title.setAttribute('aria-label', 'Section title');
+  const del = document.createElement('button'); del.type = 'button'; del.className = 'icon-btn del'; del.textContent = '×'; del.style.fontSize = '18px';
+  del.title = 'Delete section for everyone'; del.setAttribute('aria-label', 'Delete section');
+  top.append(title, del);
+  const body = document.createElement('textarea');
+  body.className = 'note-body'; body.placeholder = 'Write notes here. Everyone sees changes as you type.'; body.value = n.body;
+  body.dataset.sectionFor = n.id; body.dataset.field = 'body'; body.setAttribute('aria-label', 'Section notes');
+  const foot = document.createElement('div'); foot.className = 'note-foot'; foot.textContent = footText(n);
+  card.append(top, body, foot);
+
+  const onInput = () => {
+    const m = notes.find(x => x.id === n.id); if (!m) return;
+    m.title = title.value; m.body = body.value; m.updatedBy = me; m.updatedAt = new Date().toISOString();
+    foot.textContent = footText(m); autoGrow(body);
+    clearTimeout(sectionTimers[n.id]); sectionTimers[n.id] = setTimeout(() => saveSection(n.id), 600);
+  };
+  title.addEventListener('input', onInput); body.addEventListener('input', onInput);
+  del.addEventListener('click', async () => {
+    const m = notes.find(x => x.id === n.id);
+    if (m && (m.body.trim() || m.title.trim()) && !confirm('Delete this section for everyone?')) return;
+    deletingNotes.add(n.id); notes = notes.filter(x => x.id !== n.id); renderNotes();
+    if (sb) { const { error } = await sb.from('notes').delete().eq('id', n.id); if (error) dbError(error); }
+    setTimeout(() => deletingNotes.delete(n.id), 5000);
+  });
+  return card;
+}
+function renderNotes() {
+  const wrap = $('notesList');
+  const existing = new Map([...wrap.children].map(c => [c.dataset.id, c]));
+  const list = sortNotes();
+  list.forEach((n, i) => {
+    let el = existing.get(n.id);
+    if (!el) { el = buildNoteCard(n); }
+    else {
+      existing.delete(n.id);
+      const [t, b] = [el.querySelector('.note-title'), el.querySelector('.note-body')];
+      if (document.activeElement !== t && t.value !== n.title) t.value = n.title;
+      if (document.activeElement !== b && b.value !== n.body) b.value = n.body;
+      el.querySelector('.note-foot').textContent = footText(n);
+    }
+    if (wrap.children[i] !== el) wrap.insertBefore(el, wrap.children[i] || null);
+  });
+  existing.forEach(el => el.remove());
+  wrap.querySelectorAll('.note-body').forEach(autoGrow);
+  $('notesCount').textContent = list.length;
+  $('emptyNotes').hidden = list.length > 0;
+  $('emptyNotesMsg').textContent = notesError
+    ? 'Notes need the one-time database update. Run setup.sql in Supabase, then reload.'
+    : 'Add a section for meeting notes, vendor numbers, or anything the team needs to see.';
+}
+async function saveSection(id) {
+  const m = notes.find(x => x.id === id); if (!m || !sb) return;
+  const { error } = await sb.from('notes').update({ title: m.title, body: m.body, updated_by: me, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) dbError(error);
+}
+async function addSection() {
+  const now = new Date().toISOString();
+  const n = { id: uid(), title: '', body: '', updatedBy: '', updatedAt: now, createdAt: now };
+  notes.push(n); pendingNotes.add(n.id); renderNotes();
+  const el = $('notesList').querySelector(`[data-id="${n.id}"] .note-title`); if (el) el.focus();
+  if (!sb) return;
+  const { error } = await sb.from('notes').insert({ id: n.id, title: '', body: '', updated_by: me });
+  pendingNotes.delete(n.id);
+  if (error) { notes = notes.filter(x => x.id !== n.id); renderNotes(); dbError(error); }
+}
+
+/* ───────── OT WAITLIST ───────── */
+const WAIT_STATUS = [['waiting', 'Waiting'], ['contacted', 'Contacted'], ['scheduled', 'Scheduled']];
+const daysSince = iso => iso ? Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)) : 0;
+
+function renderWait() {
+  const ae = document.activeElement;
+  const restore = ae && ae.dataset && ae.dataset.waitFor ? { id: ae.dataset.waitFor, f: ae.dataset.field, s: ae.selectionStart, e: ae.selectionEnd } : null;
+  const list = waitlist.slice().sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+  const active = list.filter(w => w.status !== 'scheduled'), sched = list.filter(w => w.status === 'scheduled');
+  $('waitCount').textContent = active.length;
+  $('waitActiveBlock').hidden = !active.length; $('waitSchedBlock').hidden = !sched.length;
+  $('emptyWait').hidden = list.length > 0;
+  $('emptyWaitMsg').textContent = waitError
+    ? 'The waitlist needs the one-time database update. Run setup.sql in Supabase, then reload.'
+    : 'Add the first patient above. Everyone sees the list in the order people were added.';
+  const fill = (id, items, numbered) => { const el = $(id); el.innerHTML = ''; items.forEach((w, i) => el.appendChild(buildWaitCard(w, numbered ? i + 1 : 0))); };
+  fill('waitActiveList', active, true); fill('waitSchedList', sched, false);
+  if (restore) {
+    const el = [...document.querySelectorAll('[data-wait-for]')].find(x => x.dataset.waitFor === restore.id && x.dataset.field === restore.f);
+    if (el) { el.focus({ preventScroll: true }); try { el.setSelectionRange(restore.s, restore.e); } catch (e) {} }
+  }
+}
+function buildWaitCard(w, pos) {
+  const card = document.createElement('div'); card.className = 'wait-card' + (w.status === 'scheduled' ? ' scheduled' : ''); card.dataset.id = w.id;
+  if (pos) { const b = document.createElement('div'); b.className = 'pos'; b.textContent = pos; b.title = 'Position on the waitlist'; card.appendChild(b); }
+  const main = document.createElement('div'); main.className = 'wait-main';
+  const mk = (cls, field, ph, label) => {
+    const i = document.createElement('input'); i.type = 'text'; i.className = cls; i.placeholder = ph; i.value = w[field]; i.setAttribute('aria-label', label);
+    i.dataset.waitFor = w.id; i.dataset.field = field;
+    i.addEventListener('input', () => {
+      const m = waitlist.find(x => x.id === w.id); if (!m) return;
+      m[field] = i.value; clearTimeout(waitTimers[w.id]); waitTimers[w.id] = setTimeout(() => saveWait(w.id), 600);
+    });
+    return i;
+  };
+  main.append(mk('wait-name', 'name', 'Name or initials', 'Name'), mk('wait-details', 'details', 'Add details', 'Details'));
+
+  const meta = document.createElement('div'); meta.className = 'wait-meta';
+  const sel = document.createElement('select'); sel.className = 'wstatus ' + w.status; sel.setAttribute('aria-label', 'Status');
+  WAIT_STATUS.forEach(([v, l]) => { const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o); });
+  sel.value = w.status; sel.style.width = (WAIT_STATUS.find(x => x[0] === w.status)[1].length * 0.64 + 2.1) + 'em';
+  sel.addEventListener('change', () => patchWait(w.id, { status: sel.value }));
+  meta.appendChild(sel);
+  if (w.status !== 'scheduled') {
+    const d = daysSince(w.createdAt); const g = document.createElement('span');
+    g.className = 'tag' + (d >= 30 ? ' long' : ''); g.style.background = d >= 30 ? '' : 'var(--tint)'; g.style.color = d >= 30 ? '' : 'var(--tint-ink)';
+    g.textContent = d === 0 ? 'Added today' : d === 1 ? '1 day waiting' : d + ' days waiting'; meta.appendChild(g);
+  }
+  const by = document.createElement('span');
+  by.textContent = (w.createdAt ? 'Added ' + new Date(w.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Added') + (w.addedBy ? ' by ' + w.addedBy : '');
+  meta.appendChild(by);
+  main.appendChild(meta); card.appendChild(main);
+
+  const del = document.createElement('button'); del.type = 'button'; del.className = 'icon-btn del'; del.textContent = '×'; del.style.fontSize = '18px';
+  del.title = 'Remove from waitlist for everyone'; del.setAttribute('aria-label', 'Remove from waitlist');
+  del.addEventListener('click', () => {
+    if (del.classList.contains('armed')) { deleteWait(w.id); return; }
+    del.classList.add('armed'); del.textContent = 'Remove?'; del.style.fontSize = '';
+    setTimeout(() => { del.classList.remove('armed'); del.textContent = '×'; del.style.fontSize = '18px'; }, 3000);
+  });
+  card.appendChild(del);
+  return card;
+}
+async function addWait() {
+  const name = $('waitName').value.trim(), details = $('waitDetails').value.trim();
+  if (!name) { $('waitName').focus(); return; }
+  if (!sb) { showToast('Cannot reach the server. Check your connection.'); return; }
+  const now = new Date().toISOString();
+  const w = { id: uid(), name, details, status: 'waiting', addedBy: me, updatedBy: me, createdAt: now, updatedAt: now };
+  waitlist.push(w); pendingWait.add(w.id); renderWait();
+  $('waitName').value = ''; $('waitDetails').value = ''; $('waitName').focus();
+  const { error } = await sb.from('waitlist').insert({ id: w.id, name, details, status: 'waiting', added_by: me, updated_by: me });
+  pendingWait.delete(w.id);
+  if (error) { waitlist = waitlist.filter(x => x.id !== w.id); renderWait(); $('waitName').value = name; $('waitDetails').value = details; dbError(error); }
+  else showToast('Added to the OT waitlist');
+}
+async function saveWait(id) {
+  const m = waitlist.find(x => x.id === id); if (!m || !sb) return;
+  const { error } = await sb.from('waitlist').update({ name: m.name, details: m.details, status: m.status, updated_by: me, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) dbError(error);
+}
+async function patchWait(id, fields) {
+  const m = waitlist.find(x => x.id === id); if (!m) return;
+  Object.assign(m, fields); renderWait();
+  if (sb) { const { error } = await sb.from('waitlist').update({ ...fields, updated_by: me, updated_at: new Date().toISOString() }).eq('id', id); if (error) dbError(error); }
+}
+async function deleteWait(id) {
+  deletingWait.add(id); waitlist = waitlist.filter(w => w.id !== id); renderWait();
+  if (sb) { const { error } = await sb.from('waitlist').delete().eq('id', id); if (error) dbError(error); }
+  setTimeout(() => deletingWait.delete(id), 5000);
+}
+
+/* ───────── INSTALL ───────── */
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function showInstall() { if (isStandalone() || sessionStorage.getItem('ivy_inst_dismiss')) return; $('installStrip').hidden = false; }
+function hideInstall() { $('installStrip').hidden = true; }
+async function onInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice.catch(() => ({}));
+    deferredPrompt = null;
+    if (choice.outcome === 'accepted') hideInstall();
+    return;
+  }
+  const ua = navigator.userAgent;
+  let msg;
+  if (isIOS()) msg = 'Tap the Share button at the bottom of Safari, then choose "Add to Home Screen".';
+  else if (/safari/i.test(ua) && !/chrome|chromium|edg/i.test(ua)) msg = 'In the Safari menu bar, choose File, then "Add to Dock".';
+  else if (/firefox/i.test(ua)) msg = 'Firefox on desktop cannot install web apps. Open this page in Chrome or Edge to install it.';
+  else msg = 'Open the browser menu (the three dots), then choose "Install app" or "Install IvyRehab Tasks". If you do not see it, the app may already be installed.';
+  $('installHelpBody').textContent = msg; $('installHelp').hidden = false;
+}
+function initInstall() {
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; showInstall(); });
+  window.addEventListener('appinstalled', () => { deferredPrompt = null; hideInstall(); showToast('Installed. Open it from your taskbar or home screen.', 5000); });
+  $('installBtn').addEventListener('click', onInstall);
+  $('installClose').addEventListener('click', () => { sessionStorage.setItem('ivy_inst_dismiss', '1'); hideInstall(); });
+  $('installHelpClose').addEventListener('click', () => { $('installHelp').hidden = true; });
+  showInstall();   // visible the moment the page loads
+}
+
+/* ───────── SCOPE ───────── */
+function setScope(v) {
+  scope = v; localStorage.setItem('ivy_scope', v);
+  document.querySelectorAll('.scope button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.scope === v)));
+  render();
+}
+
+/* ───────── TABS + IDENTITY ───────── */
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+  localStorage.setItem('ivy_tab', name);
+  if (name === 'notes') renderNotes();
+  if (name === 'waitlist') renderWait();
+}
+function fillPeople(sel, firstLabel) {
+  sel.innerHTML = '';
+  ['', ...PEOPLE].forEach(p => { const o = document.createElement('option'); o.value = p; o.textContent = p || firstLabel; sel.appendChild(o); });
+}
+function setMe(v) {
+  me = v; if (v) localStorage.setItem('ivy_me', v); else localStorage.removeItem('ivy_me');
+  $('meSelect').value = v; render();
+}
+
+/* ───────── INIT ───────── */
+async function init() {
+  $('todayHeading').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  $('taskDate').value = todayStr();
+  fillPeople($('assignSel'), 'Nobody'); fillPeople($('meSelect'), 'Pick…'); $('meSelect').value = me;
+  PEOPLE.forEach(p => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = p;
+    b.addEventListener('click', () => { setMe(p); $('whoModal').hidden = true; });
+    $('whoButtons').appendChild(b);
+  });
+  if (!me) $('whoModal').hidden = false;
+  $('whoSkip').addEventListener('click', () => { $('whoModal').hidden = true; });
+  $('meSelect').addEventListener('change', e => setMe(e.target.value));
+
+  document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+  switchTab(localStorage.getItem('ivy_tab') || 'tasks');
+  $('sendBtn').addEventListener('click', handleAdd);
+  $('urgentToggle').addEventListener('click', () => setUrgent(!urgentOn));
+  $('addSection').addEventListener('click', addSection);
+  $('waitAdd').addEventListener('click', addWait);
+  ['waitName', 'waitDetails'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addWait(); } }));
+  document.querySelectorAll('.scope button').forEach(b => b.addEventListener('click', () => setScope(b.dataset.scope)));
+  setScope(scope);
+  initInstall();
+  $('clearTasks').addEventListener('click', () => clearDone(false));
+  $('clearOrders').addEventListener('click', () => clearDone(true));
+  $('bellBtn').addEventListener('click', onBell);
+  $('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleAdd(); } });
+  window.addEventListener('focus', clearUnseen);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { clearUnseen(); if (initialized && sb) fetchAll(true).catch(() => {}); } });
+  window.addEventListener('online', () => { if (sb) fetchAll(true).catch(() => {}); });
+
+  refreshBell(); render(); renderNotes(); renderWait(); updateSync();
+  if ('Notification' in window && Notification.permission === 'default' && !localStorage.getItem('ivy_hint')) {
+    localStorage.setItem('ivy_hint', '1'); setTimeout(() => showToast('Tap the bell to get alerts when tasks are added', 6000), 1500);
+  }
+
+  if (!sb) { showStatus('Cannot reach the server. Check your connection.', 'error', 8000); return; }
+  try { await fetchAll(false); } catch (e) { dbError(e); }
+  initialized = true; updateSync(); render();
+  startRealtime();
+  setInterval(() => fetchAll(true).catch(() => {}), 20000);
+}
+
+if ('serviceWorker' in navigator) {
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController && !reloaded) { reloaded = true; location.reload(); } });
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+init();
+</script>
+</body>
+</html>
