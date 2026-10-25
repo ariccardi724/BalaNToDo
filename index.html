@@ -4,15 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>IvyRehab Tasks</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json?v=21">
 <meta name="theme-color" content="#3FBFAE">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="light dark">
 <script>try{document.documentElement.setAttribute("data-theme", localStorage.getItem("ivy_theme") || "dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}</script>
-<link rel="icon" type="image/png" href="favicon.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png?v=21">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=21">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Slab:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -522,7 +522,7 @@
 
 <div class="install-strip" id="installStrip" hidden>
   <div class="install-inner">
-    <img class="install-icon" id="installImg" src="icon-192.png" alt="" width="36" height="36">
+    <img class="install-icon" id="installImg" src="icon-192.png?v=21" alt="" width="36" height="36">
     <p><strong>Install IvyRehab Tasks</strong><span>One tap from your taskbar or home screen, with alerts for new tasks.</span></p>
     <button class="primary" id="installBtn" type="button">Install app</button>
     <button class="icon-btn" id="installClose" type="button" aria-label="Dismiss install banner" style="font-size:18px">×</button>
@@ -599,7 +599,7 @@
     <div class="list" id="notesList"></div>
     <div class="empty" id="emptyNotes"><strong>No sections yet</strong><p id="emptyNotesMsg">Add a section for meeting notes, vendor numbers, or anything the team needs to see.</p></div>
   </section>
-  <p class="build">Build 2026.10.24-20</p>
+  <p class="build">Build 2026.10.24-21</p>
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -914,7 +914,7 @@ function clearUnseen() {
 async function notify(title, body, tag) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   if (localStorage.getItem('ivy_mute') === '1' || appIsFocused()) return;
-  const opts = { body, icon: 'icon-192.png', badge: 'icon-192.png', tag: tag || 'ivy', renotify: true };
+  const opts = { body, icon: 'icon-192.png?v=21', badge: 'icon-192.png?v=21', tag: tag || 'ivy', renotify: true };
   try {
     const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
     if (reg) { await reg.showNotification(title, opts); return; }
@@ -1438,7 +1438,7 @@ async function init() {
   $('todayHeading').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   $('taskDate').value = dueDefault();
   $('taskDate').addEventListener('change', () => { dueTouched = true; });
-  $('brandImg').addEventListener('error', () => { $('brandImg').src = 'icon-512.png'; });
+  $('brandImg').addEventListener('error', () => { $('brandImg').src = 'icon-512.png?v=21'; });
   $('installImg').src = $('brandImg').src;
   fillPeople($('assignSel'), 'Nobody'); fillPeople($('meSelect'), 'Pick…'); $('meSelect').value = me;
   PEOPLE.forEach(p => {

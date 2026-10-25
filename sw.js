@@ -1,4 +1,4 @@
-const CACHE = 'ivy-tasks-v4';
+const CACHE = 'ivy-tasks-v5';
 const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './logo-white.png', './favicon.png'];
 
 self.addEventListener('install', e => {
