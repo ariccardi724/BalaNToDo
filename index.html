@@ -416,6 +416,33 @@
   .wstatus.scheduled { background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; }
   .wstatus option { color:#0E2F38; background:#fff; }
 
+  /* ───────── DOCTORS ───────── */
+  .doc-form { background:var(--surface); border:1.5px solid var(--line); border-radius:12px; padding:12px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:10px; }
+  .doc-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .doc-form .wide { grid-column:1 / -1; }
+  .doc-form input, .doc-search input { width:100%; min-width:0; border:1.5px solid var(--line); border-radius:9px; padding:9px 11px; font-size:13.5px; background:var(--surface-2); color:var(--ink); }
+  .doc-form input:focus, .doc-search input:focus { border-color:var(--accent-2); outline:none; }
+  .doc-form input::placeholder, .doc-search input::placeholder { color:var(--muted); opacity:.75; }
+  .doc-form-foot { display:flex; align-items:center; justify-content:space-between; gap:10px 14px; flex-wrap:wrap; }
+  .doc-note { flex:1 1 220px; font-size:11.5px; line-height:1.4; color:var(--muted); }
+  .doc-card { position:relative; background:var(--surface); border:1.5px solid var(--line); border-radius:12px; box-shadow:var(--shadow); padding:12px 10px 12px 16px; display:flex; align-items:flex-start; gap:12px; }
+  .doc-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:12px 0 0 12px; background:linear-gradient(180deg, var(--aqua), var(--blue)); }
+  .doc-tile { width:40px; height:40px; border-radius:11px; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#fff; background:linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow:0 3px 10px rgba(0,10,40,.28), inset 0 0 0 1px rgba(255,255,255,.22); }
+  .doc-tile svg { width:23px; height:23px; display:block; }
+  .doc-main { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+  .doc-main input { width:100%; min-width:0; border:0; border-bottom:1.5px solid transparent; background:transparent; padding:2px 0; color:var(--ink); font-size:13px; }
+  .doc-main input:hover { border-bottom-color:var(--line); }
+  .doc-main input:focus { outline:none; border-bottom-color:var(--accent-2); }
+  .doc-main input::placeholder { color:var(--muted); opacity:.6; }
+  .doc-name { display:flex; align-items:baseline; gap:6px; }
+  .doc-name .pre { font-weight:600; font-size:15px; color:var(--muted); flex-shrink:0; }
+  .doc-name input { font-weight:600; font-size:15px; flex:1 1 0; width:auto; }
+  .doc-name input[data-field="first"] { flex:0 1 7.5em; }
+  .doc-line { display:flex; align-items:center; gap:7px; color:var(--muted); }
+  .doc-line svg { width:14px; height:14px; flex-shrink:0; }
+  .doc-line .lab { flex-shrink:0; font-size:11.5px; font-weight:600; }
+  .doc-meta { font-size:11.5px; color:var(--muted); margin-top:3px; }
+
   /* ───────── TOAST / MODAL ───────── */
   .toast {
     position:fixed; left:50%; bottom:calc(22px + env(safe-area-inset-bottom)); transform:translate(-50%, 14px);
@@ -489,6 +516,7 @@
   .today h1 { font-size:16px; line-height:1.2; }
   .today p { font-size:12px; margin-top:1px; }
   .install-icon { border-radius:22%; }
+  @media (max-width:520px) { .tab { padding:12px 10px 11px; font-size:13px; gap:5px; } .tab .count { padding:0 6px; } }
 </style>
 </head>
 <body>
@@ -560,6 +588,7 @@
     <button class="tab" role="tab" id="tab-btn-tasks" data-tab="tasks" aria-selected="true">Tasks <span class="count" id="tasksCount">0</span></button>
     <button class="tab" role="tab" id="tab-btn-orders" data-tab="orders" aria-selected="false">Orders <span class="count" id="ordersCount">0</span></button>
     <button class="tab" role="tab" id="tab-btn-waitlist" data-tab="waitlist" aria-selected="false">OT Waitlist <span class="count" id="waitCount">0</span></button>
+    <button class="tab" role="tab" id="tab-btn-doctors" data-tab="doctors" aria-selected="false">Doctors <span class="count" id="docCount">0</span></button>
     <button class="tab" role="tab" id="tab-btn-notes" data-tab="notes" aria-selected="false">Notes <span class="count" id="notesCount">0</span></button>
   </nav>
 
@@ -590,6 +619,26 @@
     <div class="empty" id="emptyWait"><strong>Waitlist is empty</strong><p id="emptyWaitMsg">Add the first patient above. Everyone sees the list in the order people were added.</p></div>
   </section>
 
+  <!-- DOCTORS -->
+  <section class="panel" id="panel-doctors" role="tabpanel" aria-labelledby="tab-btn-doctors">
+    <div class="doc-form">
+      <div class="doc-form-grid">
+        <input id="docFirst" type="text" list="docFirstList" placeholder="Dr. first name" autocomplete="off" aria-label="Doctor first name">
+        <input id="docLast" type="text" list="docLastList" placeholder="Dr. last name" autocomplete="off" aria-label="Doctor last name">
+        <input id="docAddress" class="wide" type="text" placeholder="Address" autocomplete="off" aria-label="Doctor address">
+        <input id="docPatient" class="wide" type="text" placeholder="Patient we saw: first name + last initial, or patient #" autocomplete="off" aria-label="Patient seen">
+      </div>
+      <div class="doc-form-foot">
+        <span class="doc-note">Anyone with the app link can see this list. Patient numbers are safer than names.</span>
+        <button class="primary" id="docAdd" type="button">Add doctor</button>
+      </div>
+      <datalist id="docFirstList"></datalist><datalist id="docLastList"></datalist>
+    </div>
+    <div class="doc-search"><input id="docSearch" type="search" placeholder="Search doctors, addresses, or patients" autocomplete="off" aria-label="Search the doctor list"></div>
+    <div class="block" id="docBlock" hidden><div class="list" id="docList"></div></div>
+    <div class="empty" id="emptyDocs"><strong>No doctors yet</strong><p id="emptyDocsMsg">Add the first doctor above. Everyone sees the list, sorted by last name.</p></div>
+  </section>
+
   <!-- NOTES -->
   <section class="panel" id="panel-notes" role="tabpanel" aria-labelledby="tab-btn-notes">
     <div class="notes-head">
@@ -599,7 +648,7 @@
     <div class="list" id="notesList"></div>
     <div class="empty" id="emptyNotes"><strong>No sections yet</strong><p id="emptyNotesMsg">Add a section for meeting notes, vendor numbers, or anything the team needs to see.</p></div>
   </section>
-  <p class="build">Build 2026.10.24-22</p>
+  <p class="build">Build 2026.10.24-23</p>
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -661,6 +710,8 @@ let initialized = false, fetchOk = false, rtOk = false, urgentOn = false;
 const pendingIds = new Set(), deletingIds = new Set(), openNotes = new Set();
 const pendingNotes = new Set(), deletingNotes = new Set();
 const pendingWait = new Set(), deletingWait = new Set(), waitTimers = {};
+let docs = [], docError = '', docQuery = '', docAddrTouched = false, docSig = '';
+const pendingDocs = new Set(), deletingDocs = new Set(), docTimers = {};
 // My list = tasks assigned to me + every unassigned task. Everyone = all tasks.
 const visible = t => scope === 'all' || !me || !t.assignee || t.assignee === me;
 const noteTimers = {}, sectionTimers = {};
@@ -708,6 +759,10 @@ const toRow = (t, withCat = true) => ({
 });
 const waitFromRow = r => ({
   id: String(r.id), name: r.name || '', details: r.details || '', status: r.status || 'waiting',
+  addedBy: r.added_by || '', updatedBy: r.updated_by || '', createdAt: r.created_at || '', updatedAt: r.updated_at || ''
+});
+const docFromRow = r => ({
+  id: String(r.id), first: r.first_name || '', last: r.last_name || '', address: r.address || '', patient: r.patient || '',
   addedBy: r.added_by || '', updatedBy: r.updated_by || '', createdAt: r.created_at || '', updatedAt: r.updated_at || ''
 });
 const noteFromRow = r => ({
@@ -825,6 +880,10 @@ async function fetchAll(notifyNew) {
   if (w.error) waitError = w.error.message || 'Waitlist unavailable';
   else { waitError = ''; reconcileWait(w.data || [], notifyNew); }
   renderWait();
+  const dr = await sb.from('doctors').select('*').order('created_at', { ascending: true });
+  if (dr.error) docError = dr.error.message || 'Doctors unavailable';
+  else { docError = ''; reconcileDocs(dr.data || [], notifyNew); }
+  refreshDocs();
   updateSync();
 }
 
@@ -853,6 +912,26 @@ function onNoteChange(p) {
   }
   renderNotes();
 }
+function editingDocId() { const a = document.activeElement; return a && a.dataset && a.dataset.docFor ? a.dataset.docFor : null; }
+const docLabel = d => 'Dr. ' + (d.last || d.first || '') + (d.addedBy ? ' from ' + d.addedBy : '');   // alerts never include the patient
+function reconcileDocs(rows, notifyNew) {
+  const known = new Set(docs.map(d => d.id)), ed = editingDocId(), local = new Map(docs.map(d => [d.id, d]));
+  const incoming = rows.map(docFromRow).filter(d => !deletingDocs.has(d.id)).map(d => (ed === d.id && local.get(d.id)) ? local.get(d.id) : d);
+  const fresh = incoming.filter(d => !known.has(d.id)), ids = new Set(incoming.map(d => d.id));
+  docs = [...incoming, ...docs.filter(d => pendingDocs.has(d.id) && !ids.has(d.id))];
+  if (notifyNew && initialized) fresh.forEach(d => push('New doctor entry', docLabel(d), d.id));
+}
+function refreshDocs() { const sig = JSON.stringify(docs) + '|' + docError; if (sig !== docSig) { docSig = sig; renderDocs(); } }
+function onDocChange(p) {
+  if (p.eventType === 'DELETE') { const id = String(p.old.id); docs = docs.filter(d => d.id !== id); }
+  else {
+    const d = docFromRow(p.new), ed = editingDocId();
+    if (deletingDocs.has(d.id)) return;
+    if (docs.some(x => x.id === d.id)) docs = docs.map(x => x.id === d.id ? (ed === d.id ? x : d) : x);
+    else { docs.push(d); if (initialized) push('New doctor entry', docLabel(d), d.id); }
+  }
+  renderDocs();
+}
 function onWaitChange(p) {
   if (p.eventType === 'DELETE') { const id = String(p.old.id); waitlist = waitlist.filter(w => w.id !== id); }
   else {
@@ -869,6 +948,7 @@ function startRealtime() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, onTaskChange)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, onNoteChange)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'waitlist' }, onWaitChange)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'doctors' }, onDocChange)
     .subscribe((status, err) => {
       if (status === 'SUBSCRIBED') { rtOk = true; updateSync(); fetchAll(true).catch(() => {}); }
       else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') { rtOk = false; updateSync(); if (err) console.warn(err); }
@@ -1370,6 +1450,94 @@ async function deleteWait(id) {
   setTimeout(() => deletingWait.delete(id), 5000);
 }
 
+/* ───────── DOCTORS ───────── */
+const DOC_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2v2"/><path d="M5 2v2"/><path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"/><path d="M8 15a6 6 0 0 0 12 0v-3"/><circle cx="20" cy="10" r="2"/></svg>';
+const PIN_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+const USER_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+const lc = v => (v || '').toLowerCase();
+
+function renderDocs() {
+  const ae = document.activeElement;
+  const restore = ae && ae.dataset && ae.dataset.docFor ? { id: ae.dataset.docFor, f: ae.dataset.field, s: ae.selectionStart, e: ae.selectionEnd } : null;
+  const q = lc(docQuery.trim());
+  const sorted = docs.slice().sort((a, b) => lc(a.last).localeCompare(lc(b.last)) || lc(a.first).localeCompare(lc(b.first)) || (a.createdAt || '').localeCompare(b.createdAt || ''));
+  const list = q ? sorted.filter(d => lc([d.first, d.last, d.address, d.patient].join(' ')).includes(q)) : sorted;
+  $('docCount').textContent = docs.length;
+  const box = $('docList'); box.innerHTML = ''; list.forEach(d => box.appendChild(buildDocCard(d)));
+  $('docBlock').hidden = !list.length; $('emptyDocs').hidden = list.length > 0;
+  $('emptyDocsMsg').textContent = docError ? 'The doctor list needs the one-time database update. Run setup.sql in Supabase, then reload.'
+    : docs.length ? 'No matches. Try a different search.' : 'Add the first doctor above. Everyone sees the list, sorted by last name.';
+  const fill = (id, vals) => { const dl = $(id); dl.innerHTML = ''; [...new Set(vals.filter(Boolean))].sort((x, y) => x.localeCompare(y)).forEach(v => { const o = document.createElement('option'); o.value = v; dl.appendChild(o); }); };
+  fill('docFirstList', docs.map(d => d.first)); fill('docLastList', docs.map(d => d.last));
+  if (restore) {
+    const el = [...document.querySelectorAll('[data-doc-for]')].find(x => x.dataset.docFor === restore.id && x.dataset.field === restore.f);
+    if (el) { el.focus({ preventScroll: true }); try { el.setSelectionRange(restore.s, restore.e); } catch (e) {} }
+  }
+}
+function buildDocCard(d) {
+  const card = document.createElement('div'); card.className = 'doc-card'; card.dataset.id = d.id;
+  const tile = document.createElement('span'); tile.className = 'doc-tile'; tile.innerHTML = DOC_SVG; card.appendChild(tile);
+  const main = document.createElement('div'); main.className = 'doc-main';
+  const mk = (field, ph, label) => {
+    const i = document.createElement('input'); i.type = 'text'; i.placeholder = ph; i.value = d[field]; i.setAttribute('aria-label', label);
+    i.dataset.docFor = d.id; i.dataset.field = field;
+    i.addEventListener('input', () => { const m = docs.find(x => x.id === d.id); if (!m) return; m[field] = i.value; clearTimeout(docTimers[d.id]); docTimers[d.id] = setTimeout(() => saveDoc(d.id), 600); });
+    return i;
+  };
+  const row = (iconSvg, labelText, input) => {
+    const r = document.createElement('div'); r.className = 'doc-line';
+    const ic = document.createElement('span'); ic.innerHTML = iconSvg; ic.style.display = 'inline-flex'; r.appendChild(ic.firstChild);
+    if (labelText) { const l = document.createElement('span'); l.className = 'lab'; l.textContent = labelText; r.appendChild(l); }
+    r.appendChild(input); return r;
+  };
+  const name = document.createElement('div'); name.className = 'doc-name';
+  const pre = document.createElement('span'); pre.className = 'pre'; pre.textContent = 'Dr.';
+  name.append(pre, mk('first', 'First name', 'Doctor first name'), mk('last', 'Last name', 'Doctor last name'));
+  main.append(name, row(PIN_SVG, '', mk('address', 'Address', 'Doctor address')), row(USER_SVG, 'Patient seen', mk('patient', 'First name + last initial, or patient #', 'Patient seen')));
+  const meta = document.createElement('div'); meta.className = 'doc-meta';
+  meta.textContent = (d.createdAt ? 'Added ' + new Date(d.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Added') + (d.addedBy ? ' by ' + d.addedBy : '');
+  main.appendChild(meta); card.appendChild(main);
+  const del = document.createElement('button'); del.type = 'button'; del.className = 'icon-btn del'; del.textContent = '×'; del.style.fontSize = '18px';
+  del.title = 'Remove from the list for everyone'; del.setAttribute('aria-label', 'Remove this entry');
+  del.addEventListener('click', () => {
+    if (del.classList.contains('armed')) { deleteDoc(d.id); return; }
+    del.classList.add('armed'); del.textContent = 'Remove?'; del.style.fontSize = '';
+    setTimeout(() => { del.classList.remove('armed'); del.textContent = '×'; del.style.fontSize = '18px'; }, 3000);
+  });
+  card.appendChild(del); return card;
+}
+function docAutofill() {
+  const f = lc($('docFirst').value.trim()), l = lc($('docLast').value.trim());
+  if (!l || docAddrTouched || $('docAddress').value) return;
+  const m = docs.find(d => lc(d.last) === l && lc(d.first) === f && d.address);   // same doctor entered before: reuse the address
+  if (m) $('docAddress').value = m.address;
+}
+async function addDoc() {
+  const first = $('docFirst').value.trim(), last = $('docLast').value.trim(), address = $('docAddress').value.trim(), patient = $('docPatient').value.trim();
+  if (!last) { showToast("Add the doctor's last name"); $('docLast').focus(); return; }
+  if (!sb) { showToast('Cannot reach the server. Check your connection.'); return; }
+  const now = new Date().toISOString();
+  const d = { id: uid(), first, last, address, patient, addedBy: me, updatedBy: me, createdAt: now, updatedAt: now };
+  docs.push(d); pendingDocs.add(d.id); renderDocs();
+  ['docFirst', 'docLast', 'docAddress', 'docPatient'].forEach(id => { $(id).value = ''; }); docAddrTouched = false; $('docFirst').focus();
+  const { error } = await sb.from('doctors').insert({ id: d.id, first_name: first, last_name: last, address, patient, added_by: me, updated_by: me });
+  pendingDocs.delete(d.id);
+  if (error) {
+    docs = docs.filter(x => x.id !== d.id); renderDocs();
+    $('docFirst').value = first; $('docLast').value = last; $('docAddress').value = address; $('docPatient').value = patient; dbError(error);
+  } else showToast('Doctor added');
+}
+async function saveDoc(id) {
+  const m = docs.find(x => x.id === id); if (!m || !sb) return;
+  const { error } = await sb.from('doctors').update({ first_name: m.first, last_name: m.last, address: m.address, patient: m.patient, updated_by: me, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) dbError(error);
+}
+async function deleteDoc(id) {
+  deletingDocs.add(id); docs = docs.filter(d => d.id !== id); renderDocs();
+  if (sb) { const { error } = await sb.from('doctors').delete().eq('id', id); if (error) dbError(error); }
+  setTimeout(() => deletingDocs.delete(id), 5000);
+}
+
 /* ───────── INSTALL ───────── */
 const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
 const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -1415,6 +1583,7 @@ function switchTab(name) {
   localStorage.setItem('ivy_tab', name);
   if (name === 'notes') renderNotes();
   if (name === 'waitlist') renderWait();
+  if (name === 'doctors') renderDocs();
 }
 function fillPeople(sel, firstLabel) {
   sel.innerHTML = '';
@@ -1455,6 +1624,11 @@ async function init() {
   $('sendBtn').addEventListener('click', handleAdd);
   $('urgentToggle').addEventListener('click', () => setUrgent(!urgentOn));
   $('addSection').addEventListener('click', addSection);
+  $('docAdd').addEventListener('click', addDoc);
+  ['docFirst', 'docLast', 'docAddress', 'docPatient'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addDoc(); } }));
+  ['docFirst', 'docLast'].forEach(id => $(id).addEventListener('input', docAutofill));
+  $('docAddress').addEventListener('input', () => { docAddrTouched = true; });
+  $('docSearch').addEventListener('input', e => { docQuery = e.target.value; renderDocs(); });
   $('waitAdd').addEventListener('click', addWait);
   ['waitName', 'waitDetails'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addWait(); } }));
   document.querySelectorAll('.scope button').forEach(b => b.addEventListener('click', () => setScope(b.dataset.scope)));
@@ -1469,7 +1643,7 @@ async function init() {
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { clearUnseen(); if (initialized && sb) fetchAll(true).catch(() => {}); } });
   window.addEventListener('online', () => { if (sb) fetchAll(true).catch(() => {}); });
 
-  refreshBell(); render(); renderNotes(); renderWait(); updateSync();
+  refreshBell(); render(); renderNotes(); renderWait(); renderDocs(); updateSync();
   if ('Notification' in window && Notification.permission === 'default' && !localStorage.getItem('ivy_hint')) {
     localStorage.setItem('ivy_hint', '1'); setTimeout(() => showToast('Tap the bell to get alerts when tasks are added', 6000), 1500);
   }
